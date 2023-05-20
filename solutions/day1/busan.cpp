@@ -1,13 +1,14 @@
-#include <bits/stdc++.h>
+#include "bits/stdc++.h"
 using namespace std;
 #define DEBUG 0
-#define st first
-#define nd second
+#define CASES 0
+
+/* --- Official Solution --- */
 
 const int SZ = 2e3+7;
 const int MV = 3e3+7;
 
-int A[SZ], B[SZ];
+int L[SZ], R[SZ];
 int dp[SZ][MV][4];
 
 /*
@@ -15,6 +16,9 @@ int dp[SZ][MV][4];
 1 --> Right Forward
 2 --> Left Backward
 3 --> Right Backward
+
++ --> People
+- --> Zombies
 */
 
 void knapsack(int N, int M, bool sym) {
@@ -25,27 +29,27 @@ void knapsack(int N, int M, bool sym) {
     int end = sym ? 0:N+1;
 
     // Knapsack 0/1
-    for(int i=start;i!=end;i-=c) {
-        if(A[i]>=0 && B[i]<0) { // (+,-)
-            for(int j=0;j<=M;j++) {
-                dp[i][j][l] = max(dp[i+c][j][l], j+B[i]>=0 ? dp[i+c][j+B[i]][l] + A[i] : 0);
+    for(int i=start; i!=end; i-=c) {
+        if(L[i]>=0 && R[i]<0) { // (+,-)
+            for(int j=0; j<=M; j++) {
+                dp[i][j][l] = max(dp[i+c][j][l], j+R[i]>=0 ? dp[i+c][j+R[i]][l] + L[i] : 0);
                 dp[i][j][r] = dp[i+c][j][r];
             }
         }
-        else if(B[i]>=0 && A[i]<0) { // (-,+)
-            for(int j=0;j<=M;j++) {
-                dp[i][j][r] = max(dp[i+c][j][r], j+A[i]>=0 ? dp[i+c][j+A[i]][r] + B[i] : 0);
+        else if(R[i]>=0 && L[i]<0) { // (-,+)
+            for(int j=0; j<=M; j++) {
+                dp[i][j][r] = max(dp[i+c][j][r], j+L[i]>=0 ? dp[i+c][j+L[i]][r] + R[i] : 0);
                 dp[i][j][l] = dp[i+c][j][l];
             }
         }
-        else if(A[i]>=0 && B[i]>=0) { // (+,+)
-            for(int j=0;j<=M;j++) {
-                dp[i][j][l] = dp[i+c][j][l] + A[i];
-                dp[i][j][r] = dp[i+c][j][r] + B[i];
+        else if(L[i]>=0 && R[i]>=0) { // (+,+)
+            for(int j=0; j<=M; j++) {
+                dp[i][j][l] = dp[i+c][j][l] + L[i];
+                dp[i][j][r] = dp[i+c][j][r] + R[i];
             }
         }
-        else {
-            for(int j=0;j<=M;j++) { // (-,-)
+        else { // (-,-)
+            for(int j=0; j<=M; j++) {
                 dp[i][j][l] = dp[i+c][j][l];
                 dp[i][j][r] = dp[i+c][j][r];
             }
@@ -53,13 +57,11 @@ void knapsack(int N, int M, bool sym) {
     }
 }
 
-int main() {
+void process(void) {
     int N, M, S;
     cin >> N >> M >> S;
-    for(int i=1;i<=N;i++) cin >> A[i];
-    for(int i=1;i<=N;i++) cin >> B[i];
-
-    assert(N>=1 && M>=0);
+    for(int i=1; i<=N; i++) cin >> L[i];
+    for(int i=1; i<=N; i++) cin >> R[i];
 
     knapsack(N, M, false); // Forward
     knapsack(N, M, true); // Backward
@@ -68,14 +70,14 @@ int main() {
     
     if(!S) {
         cout << result;
-        return 0;
+        return ;
     }
 
     // swap check
-    for(int i=1;i<N;i++) {
+    for(int i=1; i<N; i++) {
         int best_left = 0;
         int best_right = 0;
-        for(int j=0;j<=M;j++) {
+        for(int j=0; j<=M ;j++) {
             best_left = max(best_left, dp[i][j][0] + dp[i+1][M-j][3]);
             best_right = max(best_right, dp[i][j][1] + dp[i+1][M-j][2]);
         }
@@ -84,5 +86,16 @@ int main() {
 
     cout << result;
 
-    return 0;
+    return ;
+}
+
+int main() {
+    #ifndef DEBUG
+    freopen("in.txt", "r", stdin);
+    freopen("out.txt", "w", stdout);
+    #endif
+    cin.tie(nullptr)->ios::sync_with_stdio(false);
+    int t(1);
+    if(CASES) cin >> t;
+    while(t--) process();
 }
